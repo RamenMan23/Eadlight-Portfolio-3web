@@ -17,8 +17,8 @@ const PANEL_WIDTH = 2;
 const PANEL_HEIGHT = 3;
 const BEND_RADIUS = 8;
 
-// クロップサイズの定数を追加
-const CROP_SIZE = 2;  // 正方形パネルのサイズ
+// // クロップサイズの定数を追加
+// const CROP_SIZE = 2;  // 正方形パネルのサイズ
 
 class CustomBentPlaneGeometry extends THREE.BufferGeometry {
   constructor() {
@@ -84,54 +84,38 @@ const createSharedGeometry = () => {
 };
 
 // アスペクト比調整関数を修正
-const useImageAspect = (url: string, hovered: boolean) => {
-  const [dimensions, setDimensions] = useState({ width: CROP_SIZE, height: CROP_SIZE });
+// const useImageAspect = (url: string, hovered: boolean) => {
+//   const [dimensions, setDimensions] = useState({ width: CROP_SIZE, height: CROP_SIZE });
 
-  useEffect(() => {
-    const img = document.createElement('img');
-    img.onload = () => {
-      // 正方形クロップサイズ（非ホバー時）
-      const squareSize = { width: CROP_SIZE, height: CROP_SIZE };
+//   useEffect(() => {
+//     const img = document.createElement('img');
+//     img.onload = () => {
+//       // 正方形クロップサイズ（非ホバー時）
+//       const squareSize = { width: CROP_SIZE, height: CROP_SIZE };
 
-      // オリジナルのアスペクト比（ホバー時）
-      const originalAspect = img.width / img.height;
-      const originalSize = originalAspect > 1
-        ? { width: CROP_SIZE * originalAspect, height: CROP_SIZE }
-        : { width: CROP_SIZE, height: CROP_SIZE / originalAspect };
+//       // オリジナルのアスペクト比（ホバー時）
+//       const originalAspect = img.width / img.height;
+//       const originalSize = originalAspect > 1
+//         ? { width: CROP_SIZE * originalAspect, height: CROP_SIZE }
+//         : { width: CROP_SIZE, height: CROP_SIZE / originalAspect };
 
-      // ホバー状態に応じてサイズを設定
-      setDimensions(hovered ? originalSize : squareSize);
-    };
-    img.src = url;
+//       // ホバー状態に応じてサイズを設定
+//       setDimensions(hovered ? originalSize : squareSize);
+//     };
+//     img.src = url;
 
-    return () => {
-      img.onload = null;
-    };
-  }, [url, hovered]);
+//     return () => {
+//       img.onload = null;
+//     };
+//   }, [url, hovered]);
 
-  return dimensions;
-};
+//   return dimensions;
+// };
 
 // テクスチャローダーの設定
 const textureLoader = new THREE.TextureLoader();
 textureLoader.crossOrigin = 'anonymous';
 
-const loadTexture = (url: string): Promise<THREE.Texture> => {
-  return new Promise((resolve, reject) => {
-    textureLoader.load(
-      url,
-      (texture) => {
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
-        texture.needsUpdate = true;
-        resolve(texture);
-      },
-      undefined,
-      reject
-    );
-  });
-};
 
 // images配列を作成する関数
 const getGalleryImages = () => {
@@ -164,7 +148,7 @@ interface ImagePanelsProps {
 }
 
 
-function ImagePanels({ images, sharedGeometry, onPanelClick }: ImagePanelsProps) {
+function ImagePanels({ images,  onPanelClick }: ImagePanelsProps) {
   const radius = 4;  // ここで配置半径を調整可能
   const angleStep = (Math.PI * 2) / images.length;
   

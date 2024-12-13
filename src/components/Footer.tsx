@@ -1,5 +1,5 @@
 // components/Footer.tsx
-import React from 'react';
+
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Mail } from 'lucide-react';
 

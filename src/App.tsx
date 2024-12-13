@@ -1,7 +1,7 @@
 //App.tsx
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { Canvas } from '@react-three/fiber'
-import {  ScrollControls, CameraControls } from '@react-three/drei'
+import {  ScrollControls } from '@react-three/drei'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import {  Suspense } from 'react'
 import ScrollScene from './components/ScrollScene'
