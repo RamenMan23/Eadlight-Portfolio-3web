@@ -1,0 +1,37 @@
+/* index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+main #root {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.text-container {
+  position: relative;
+  z-index: 10; /* テキストを前面に */
+}
+
+.canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0; /* Canvasを背面に */
+}
+
+@font-face {
+  font-family: 'PlayfairDisplay';
+  src: url('/fonts/PlayfairDisplay-Regular.ttf') format('ttf');
+  font-weight: 400;
+  font-style: normal;
+}

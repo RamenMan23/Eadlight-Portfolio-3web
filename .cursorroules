@@ -1,0 +1,83 @@
+3D Portfolio Specific Guidelines
+  - Scroll-Based Animation System
+    - Use useScroll from @react-three/drei for efficient scroll tracking
+    - Implement requestAnimationFrame for smooth animations
+    - Use IntersectionObserver with proper thresholds
+    - Implement scroll-linked camera movements
+    - Add subtle parallax effects for depth
+
+  3D Bird (Hawk) Animation System
+    - Implement GLTF loading with Draco compression
+    - Create curved flight paths using Catmull-Rom splines
+    - Use AnimationMixer for wing animations
+    - Implement distance-based LOD with three instances
+    - Add motion blur effect for flight
+    - Create feather particle effects
+    - Implement shadow casting for realism
+
+  Image Display Optimization
+    - Convert images to WebP format for performance
+    - Implement proper image lazy loading
+    - Create image thumbnails for preview
+    - Implement proper image caching strategy
+
+  Spiral Animation & Layout
+    - Implement Fibonacci spiral for image positioning
+    - Create smooth quaternion-based rotation animations
+    - Add depth-of-field effects for non-focused images
+    - Implement proper image scaling based on position
+    - Create reflection and shadow effects
+    - Add subtle floating animations
+
+  Image Interaction
+    - Implement smooth focus transitions
+    - Create zoom effect for selected images
+    - Add hover state animations
+    - Implement proper image preloading
+    - Create smooth blur transitions
+    - Add subtle parallax effects
+
+  Contact Form Implementation
+    - Use react-hook-form for validation
+    - Implement floating label animations
+    - Add subtle 3D form element animations
+    - Create loading/success/error 3D animations
+    - Implement proper CORS handling
+    - Add form progress indicators
+    - Create 3D success celebration effects
+
+Performance Optimization
+  - Asset Loading & Caching
+    - Implement progressive loading strategy
+    - Use WebP format for textures
+    - Create proper asset preloading queue
+    - Implement texture compression
+    - Use proper mipmap levels
+  - Animation Performance
+    - Use object pooling for particle effects
+    - Implement proper frustum culling
+    - Use instancedMesh for repeated elements
+    - Optimize raycaster calls
+  - Video Optimization
+    - Implement proper video quality switching
+    - Use video texture pooling
+    - Create efficient video preloading system
+
+Responsive Design & Interaction
+  - Mobile Optimization
+    - Create touch-friendly orbit controls
+    - Implement proper mobile fallbacks
+    - Add mobile-specific animations
+    - Optimize performance for mobile GPUs
+  - Breakpoint System
+    - Create responsive camera positions
+    - Implement layout shifts for mobile
+    - Add device-specific interaction modes
+    - Create proper touch gesture handlers
+
+Error Handling & Fallbacks
+  - Implement proper error boundaries
+  - Create fallback experiences
+  - Add loading placeholder animations
+  - Implement proper retry mechanisms
+  - Create degraded experience modes
