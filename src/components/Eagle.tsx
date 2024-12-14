@@ -11,7 +11,7 @@ interface EagleProps {
 }
 
 function Eagle({ fadeOut = false, visible = true }: EagleProps) {
-  const { scene, animations } = useGLTF('/src/assets/gltf/gltf_eagle/scene.gltf')
+  const { scene, animations } = useGLTF('/models/gltf_eagle/scene.gltf')
   const { actions } = useAnimations(animations, scene)
   const { scrollYProgress } = useScroll()
 
@@ -129,6 +129,6 @@ function Eagle({ fadeOut = false, visible = true }: EagleProps) {
 }
 
 
-useGLTF.preload('/src/assets/gltf/gltf_eagle/scene.gltf')
+useGLTF.preload('/models/gltf_eagle/scene.gltf')
 
 export default Eagle 
