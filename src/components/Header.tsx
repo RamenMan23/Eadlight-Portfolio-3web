@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import { Instagram, Youtube, Mail } from 'lucide-react';
 
 const Header = () => {
-  const instagramUrl = import.meta.env.VITE_INSTAGRAM_URL;
-  const contactEmail = import.meta.env.VITE_CONTACT_EMAIL;
-  const youtubeUrl = import.meta.env.VITE_YOUTUBE_URL;
+  const instagramUrl = import.meta.env.VITE_INSTAGRAM_URL || 'https://www.instagram.com/eadlight.visual/';
+  const youtubeUrl = import.meta.env.VITE_YOUTUBE_URL || 'https://www.youtube.com/@eadlightvisuals1670';
+  const contactEmail = import.meta.env.VITE_CONTACT_EMAIL || 'eadlightvisual@gmail.com';
 
   return (
     <motion.header 
