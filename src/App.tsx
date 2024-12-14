@@ -105,7 +105,7 @@ function Home() {
 
 
       {/* スクロール用の空要素を一番下に移動 */}
-      <div className="w-full h-[1600vh]" aria-hidden="true" />
+      <div className="w-full h-[1000vh]" aria-hidden="true" />
     </div>
   );
 }

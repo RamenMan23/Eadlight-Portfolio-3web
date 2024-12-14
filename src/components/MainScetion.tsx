@@ -73,9 +73,9 @@ const MainSection = ({ scrollProgress }: MainSectionProps) => {
               stiffness:70,
             }}
           >
-            <motion.li className='mb-4'style={{x: useTransform(scrollProgress, [0, 0.05, 0.1], [-50, -30,0])}}>Product Animation</motion.li>
-            <motion.li className='mb-4'style={{x: useTransform(scrollProgress, [0.1, 0.15, 0.2], [-50, -30,0])}}>ArchiViz</motion.li>
-            <motion.li className='mb-8'style={{x: useTransform(scrollProgress, [0.2, 0.23, 0.25], [-50, -30,0])}}>Development</motion.li>
+            <motion.li className='mb-4 ml-7'style={{x: useTransform(scrollProgress, [0, 0.05, 0.1], [-50, -30,0])}}>3DCG</motion.li>
+            <motion.li className='mb-4 ml-7'style={{x: useTransform(scrollProgress, [0.1, 0.15, 0.2], [-50, -30,0])}}>ArchiViz</motion.li>
+            <motion.li className='mb-8 ml-7'style={{x: useTransform(scrollProgress, [0.2, 0.23, 0.25], [-50, -30,0])}}>Development</motion.li>
           </motion.ul>
           
           <motion.button 

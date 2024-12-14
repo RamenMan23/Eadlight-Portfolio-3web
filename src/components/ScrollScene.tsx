@@ -16,7 +16,7 @@ const ScrollScene = ({ scrollProgress, onDragStart, onDragEnd }: ScrollSceneProp
   const [isInitialized, setIsInitialized] = useState(false)
   const timeoutRef = useRef<number>()  
   // Eagleの表示制御
-  const eagleVisibility = useTransform(scrollProgress, [0, 0.3, 0.4], [1, 1, 0])
+  const eagleVisibility = useTransform(scrollProgress, [0, 0.3, 0.4], [1, 1, 1])
 
 
   useEffect(() => {
