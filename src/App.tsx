@@ -7,10 +7,10 @@ import {  Suspense } from 'react'
 import ScrollScene from './components/ScrollScene'
 import MainSection from './components/MainScetion'
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
-import Works from './pages/WorksPage'
 import ContactForm from './components/ContactForm'
 import Header from './components/Header';
 import PageGuide from './components/PageGuide'
+import WorksPage from './pages/WorksPage'
 
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/works" element={<Works />} />
+        <Route path="/works" element={<WorksPage />} />
       </Routes>
     </Router>
   );

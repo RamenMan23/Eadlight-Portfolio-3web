@@ -1,8 +1,11 @@
+//WorksPage.tsx
+
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from '../components/Header'
 import { WorkItem } from '../data/works'
 import works from '../data/works'
+
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -94,9 +97,13 @@ const VideoModal = ({ isOpen, onClose, work }: VideoModalProps) => {
   );
 };
 
-const Works = () => {
+const WorksPage = () => {
   const [activeTab, setActiveTab] = useState<string>('all')
   const [selectedWork, setSelectedWork] = useState<WorkItem | null>(null)
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error(`Failed to load image: ${e.currentTarget.src}`);
+  };
   
   const tabs = [
     { id: 'all', label: 'すべて' },
@@ -173,6 +180,7 @@ const Works = () => {
     <img
       src={work.images[0]}
       alt={work.title}
+      onError={handleImageError}
       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
     />
   ) : (
@@ -215,4 +223,4 @@ const Works = () => {
   )
 }
 
-export default Works
+export default WorksPage
