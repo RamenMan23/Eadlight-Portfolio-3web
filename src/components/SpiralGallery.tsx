@@ -310,8 +310,8 @@ extend({ BentPlaneGeometry })
 
 // 速度制限の定数を追加
 const MAX_VELOCITY = {
-  ROTATION: 1.2,    // 通常の回転の最大速度
-  INERTIA: 0.3,     // 慣性による回転の最大速度
+  ROTATION: 0.2,    // 通常の回転の最大速度
+  INERTIA: 0.1,     // 慣性による回転の最大速度
   VERTICAL: 0.02    // 垂直方向の最大速度
 };
 
@@ -387,7 +387,7 @@ export const SpiralGallery = ({  fadeOut = false, onDragStart, onDragEnd }: Spir
     scrollPosition.current = window.scrollY;
     
     // スクロール禁止のスタイルを適用
-    document.body.style.overflow = 'hidden';
+    // document.body.style.overflow = 'hidden';
     document.body.style.top = `-${scrollPosition.current}px`;
     
     // passive: falseでイベントリスナーを追加
@@ -460,8 +460,8 @@ export const SpiralGallery = ({  fadeOut = false, onDragStart, onDragEnd }: Spir
       Math.min(Math.max(rawVelocityX, -MAX_VELOCITY.VERTICAL), MAX_VELOCITY.VERTICAL);
 
     setVelocity(prev => ({
-      y: isNaN(prev.y) ? targetVelocityY : prev.y * 0.8 + targetVelocityY * 0.2,
-      x: isNaN(prev.x) ? targetVelocityX : prev.x * 0.8 + targetVelocityX * 0.2
+      y: isNaN(prev.y) ? targetVelocityY : prev.y * 0.2 + targetVelocityY * 0.1,
+      x: isNaN(prev.x) ? targetVelocityX : prev.x * 0.2 + targetVelocityX * 0.1
     }));
 
     // 回転の更新と正規化

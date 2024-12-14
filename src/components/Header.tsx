@@ -10,7 +10,7 @@ const Header = () => {
 
   return (
     <motion.header 
-      className="flex items-center justify-between h-16 px-4 md:px-40"
+      className="flex items-center justify-between h-16 px-4 md:px-40 bg-black bg-opacity-30"
       initial={{y:-100, opacity:0}}
       animate={{y:0, opacity:1}}
       transition={{
