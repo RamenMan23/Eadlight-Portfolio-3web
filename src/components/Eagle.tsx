@@ -25,25 +25,25 @@ function Eagle({ fadeOut = false, visible = true }: EagleProps) {
   // 位置とローテーションの制御
   const positionX = useTransform(
     smoothProgress,
-    [0, 0.1, 0.15, 0.25, 0.3, 0.35],
+    [0, 0.05, 0.07, 0.15, 0.3, 0.35],
     [30, -100, -60, 4, 4, 21]
   );
 
   const positionY = useTransform(
     smoothProgress,
-    [0, 0.1, 0.15, 0.25],
+    [0, 0.05, 0.1, 0.15],
     [25, -20, -15, -6.7]
   );
 
   const positionZ = useTransform(
     smoothProgress,
-    [0, 0.1, 0.15, 0.25],
+    [0, 0.05, 0.1, 0.15],
     [-60, -50, -20, -11]
   );
 
   const rotationY = useTransform(
     smoothProgress,
-    [0, 0.1, 0.15, 0.25],
+    [0, 0.05, 0.1, 0.15],
     [Math.PI * 1.5, Math.PI * 2, Math.PI * 2.2, Math.PI * 2.13]
   );
 

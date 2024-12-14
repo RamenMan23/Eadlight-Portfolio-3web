@@ -2,14 +2,16 @@ import { useState, useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import Eagle from './Eagle'
 import { MotionValue, useTransform } from 'framer-motion'
-import { SpiralGallery } from './SpiralGallery'
+import SpiralGallery from './SpiralGallery'
 
 
 interface ScrollSceneProps {
   scrollProgress: MotionValue<number>;
+  onDragStart: () => void;
+  onDragEnd: () => void;
 }
 
-const ScrollScene = ({ scrollProgress }: ScrollSceneProps) => {
+const ScrollScene = ({ scrollProgress, onDragStart, onDragEnd }: ScrollSceneProps) => {
   const groupRef = useRef<THREE.Group>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const timeoutRef = useRef<number>()  
@@ -41,11 +43,11 @@ const ScrollScene = ({ scrollProgress }: ScrollSceneProps) => {
     <group ref={groupRef}>
       <Eagle visible={eagleVisibility.get() > 0} />
       <SpiralGallery 
-      visible={true}
-      fadeOut={true}
-      scrollProgress={scrollProgress}  // scrollProgressを追加
+        fadeOut={true}
+        scrollProgress={scrollProgress}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
       />
-      
     </group>
   )
 }

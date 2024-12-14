@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three'
-import { useRef, useState, useEffect, useMemo } from 'react'
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react'
 import { useCursor } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useScroll, useSpring, useTransform, MotionValue } from 'framer-motion'
@@ -186,14 +186,19 @@ interface ImagePanelProps {
 function ImagePanel({ url, onPanelClick, ...props }: ImagePanelProps) {
   const ref = useRef<THREE.Mesh>(null)
   const [hovered, setHovered] = useState(false)
+  const [isClick, setIsClick] = useState(false)
+  const [pressStartTime, setPressStartTime] = useState(0)
   useCursor(hovered)
+
+  // クリックの判定用の定数
+  const MOVE_THRESHOLD = 5  // ピクセル単位
+  const CLICK_THRESHOLD = 200  // ミリ秒
+  const startPos = useRef({ x: 0, y: 0 })
 
   useFrame((_, delta) => {
     if (ref.current) {
-      // スケールアニメーションを2次元に修正
       easing.damp3(ref.current.scale, hovered ? [1.2, 1.2, 1] : [1, 1, 1], 0.1, delta)
       
-      // マテリアルのエフェクト
       const material = ref.current.material as any
       if (material) {
         easing.damp(material, 'radius', hovered ? 0.25 : 0.1, 0.2, delta)
@@ -208,6 +213,37 @@ function ImagePanel({ url, onPanelClick, ...props }: ImagePanelProps) {
       url={url}
       transparent
       side={THREE.DoubleSide}
+      onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+        startPos.current = { x: e.clientX, y: e.clientY }
+        setPressStartTime(Date.now())
+        setIsClick(true)
+      }}
+      onPointerMove={(e: ThreeEvent<PointerEvent>) => {
+        if (!isClick) return
+        
+        const dx = e.clientX - startPos.current.x
+        const dy = e.clientY - startPos.current.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        
+        // 一定以上の移動があった場合はクリックではないと判断
+        if (distance > MOVE_THRESHOLD) {
+          setIsClick(false)
+        }
+      }}
+      onPointerUp={(e: ThreeEvent<PointerEvent>) => {
+        const pressDuration = Date.now() - pressStartTime
+        
+        // クリックとして扱う条件：
+        // 1. isClickがtrueのまま（大きな移動がない）
+        // 2. 押下時間が閾値以下
+        if (isClick && pressDuration < CLICK_THRESHOLD) {
+          e.stopPropagation() // クリック時のみ伝播を止める
+          onPanelClick?.()
+        }
+        
+        setIsClick(false)
+        setPressStartTime(0)
+      }}
       onPointerOver={(e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation()
         setHovered(true)
@@ -215,10 +251,8 @@ function ImagePanel({ url, onPanelClick, ...props }: ImagePanelProps) {
       onPointerOut={(e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation()
         setHovered(false)
-      }}
-      onClick={(e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation()
-        onPanelClick?.()
+        setIsClick(false)
+        setPressStartTime(0)
       }}
       {...props}
     >
@@ -270,16 +304,25 @@ class BentPlaneGeometry extends THREE.PlaneGeometry {
   }
 }
 
+
 // @react-three/fiberに登録
 extend({ BentPlaneGeometry })
 
+// 速度制限の定数を追加
+const MAX_VELOCITY = {
+  ROTATION: 1.2,    // 通常の回転の最大速度
+  INERTIA: 0.3,     // 慣性による回転の最大速度
+  VERTICAL: 0.02    // 垂直方向の最大速度
+};
+
 interface SpiralGalleryProps {
-  visible: boolean;
   fadeOut?: boolean;
   scrollProgress: MotionValue<number>;
+  onDragStart: () => void;
+  onDragEnd: () => void;
 }
 
-export const SpiralGallery = ({ visible, fadeOut = false }: SpiralGalleryProps) => {
+export const SpiralGallery = ({  fadeOut = false, onDragStart, onDragEnd }: SpiralGalleryProps) => {
   const navigate = useNavigate();
   const groupRef = useRef<THREE.Group>(null);
   const { scrollYProgress } = useScroll();
@@ -326,84 +369,194 @@ export const SpiralGallery = ({ visible, fadeOut = false }: SpiralGalleryProps) 
     [0, Math.PI * 0.5, Math.PI, Math.PI * 1.5, Math.PI * 2]
   );
 
-  // マウスダウンハンドラー
-  const handlePointerDown = (event: any) => {
-    event.stopPropagation();
-    setIsDragging(true);
-    setVelocity({ x: 0, y: 0 });
-    setPreviousMousePosition({
-      x: event.clientX ?? event.touches?.[0]?.clientX ?? 0,
-      y: event.clientY ?? event.touches?.[0]?.clientY ?? 0
-    });
-    lastUpdateTime.current = Date.now();
+
+  // スクロール制御のための関数を追加
+  const preventDefault = useCallback((e: Event) => {
+    // ドラッグ中のみイベントをキャンセル
+    if (isDragging && e.cancelable) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, [isDragging]);
+
+  // スクロール位置を保存するための変数
+  const scrollPosition = useRef(0);
+
+  const disableScroll = useCallback(() => {
+    // 現在のスクロール位置を保存
+    scrollPosition.current = window.scrollY;
+    
+    // スクロール禁止のスタイルを適用
+    document.body.style.overflow = 'hidden';
+    document.body.style.top = `-${scrollPosition.current}px`;
+    
+    // passive: falseでイベントリスナーを追加
+    const options = { passive: false };
+    window.addEventListener('wheel', preventDefault, options);
+    window.addEventListener('touchmove', preventDefault, options);
+    window.addEventListener('scroll', preventDefault, options);
+
+    //console.log('🚫 Scroll disabled');
+  }, [preventDefault]);
+
+  const enableScroll = useCallback(() => {
+    // スクロール制御を解除
+    document.body.style.overflow = '';
+    document.body.style.top = '';
+    
+    // 保存していた位置までスクロール
+    window.scrollTo(0, scrollPosition.current);
+    
+    // イベントリスナーを削除
+    window.removeEventListener('wheel', preventDefault);
+    window.removeEventListener('touchmove', preventDefault);
+    window.removeEventListener('scroll', preventDefault);
+
+    //console.log('✅ Scroll enabled');
+  }, [preventDefault]);
+
+  // ドラッグ状態の変更を監視
+  useEffect(() => {
+    if (isDragging) {
+      disableScroll();
+    } else {
+      enableScroll();
+    }
+
+    return () => {
+      // コンポーネントのアンマウントまたはドラッグ状態の変更時に確実にスクロールを有効化
+      enableScroll();
+    };
+  }, [isDragging, enableScroll, disableScroll]);
+
+  // 回転の正規化関数を追加
+  const normalizeRotation = (rotation: number): number => {
+    const TWO_PI = Math.PI * 2;
+    return ((rotation % TWO_PI) + TWO_PI) % TWO_PI;
   };
 
-// handlePointerMoveの修正部分
-const handlePointerMove = (event: PointerEvent | TouchEvent) => {
-  if (!isDragging || !groupRef.current) return;
+  // handlePointerMoveの修正
+  const handlePointerMove = (event: PointerEvent | TouchEvent) => {
+    if (!isDragging || !groupRef.current) return;
 
-  const currentTime = Date.now();
-  const deltaTime = Math.min((currentTime - lastUpdateTime.current) / 1000, 0.1); // deltaTimeに上限を設定
-  lastUpdateTime.current = currentTime;
+    const currentTime = Date.now();
+    const deltaTime = Math.min(Math.max((currentTime - lastUpdateTime.current) / 1000, 0.001), 0.1); // 最小値を設定
+    lastUpdateTime.current = currentTime;
 
-  const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-  const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
 
-  const deltaX = clientX - previousMousePosition.x;
-  const deltaY = clientY - previousMousePosition.y;
+    const deltaX = clientX - previousMousePosition.x;
+    const deltaY = clientY - previousMousePosition.y;
 
-  const rotationSensitivity = 0.001; // より細かな制御のため減少
-  const maxVelocity = 0.3; // 最大速度を制限
-  const smoothingFactor = 0.4; // 新旧velocityの補間係数
+    // 速度計算と制限
+    const rawVelocityY = deltaX * 0.003 / deltaTime;
+    const rawVelocityX = deltaY * 0.001 / deltaTime;
 
-  // 新しいvelocityの計算
-  const targetVelocityY = Math.min(Math.max(deltaX * rotationSensitivity / deltaTime, -maxVelocity), maxVelocity);
-  const targetVelocityX = Math.min(Math.max(deltaY * rotationSensitivity / deltaTime, -maxVelocity), maxVelocity);
+    // 速度を制限（NaNチェックを追加）
+    const targetVelocityY = isNaN(rawVelocityY) ? 0 : 
+      Math.min(Math.max(rawVelocityY, -MAX_VELOCITY.ROTATION), MAX_VELOCITY.ROTATION);
+    const targetVelocityX = isNaN(rawVelocityX) ? 0 : 
+      Math.min(Math.max(rawVelocityX, -MAX_VELOCITY.VERTICAL), MAX_VELOCITY.VERTICAL);
 
-  // 前回のvelocityと新しいvelocityの補間
-  setVelocity(prev => ({
-    y: prev.y * (1 - smoothingFactor) + targetVelocityY * smoothingFactor,
-    x: prev.x * (1 - smoothingFactor) + targetVelocityX * smoothingFactor
-  }));
+    setVelocity(prev => ({
+      y: isNaN(prev.y) ? targetVelocityY : prev.y * 0.8 + targetVelocityY * 0.2,
+      x: isNaN(prev.x) ? targetVelocityX : prev.x * 0.8 + targetVelocityX * 0.2
+    }));
 
-  let newYRotation = rotationState.y + (deltaX * rotationSensitivity);
-  let newXRotation = rotationState.x + (deltaY * rotationSensitivity);
-  newXRotation = Math.max(Math.min(newXRotation, Math.PI/6), -Math.PI/6);
+    // 回転の更新と正規化
+    let newYRotation = normalizeRotation(rotationState.y + deltaX * 0.003);
+    let newXRotation = Math.max(Math.min(rotationState.x + deltaY * 0.001, Math.PI/12), -Math.PI/12);
 
-  setRotationState({
-    y: newYRotation,
-    x: newXRotation
-  });
+    setRotationState({
+      y: newYRotation,
+      x: newXRotation
+    });
+
+    setPreviousMousePosition({ x: clientX, y: clientY });
+  };
+
+  // イベントの型定義を追加
+  type PointerEvent3D = ThreeEvent<PointerEvent>;
+  type TouchEvent3D = ThreeEvent<TouchEvent>;
+
+
+// handlePointerDownの型を修正
+const handlePointerDown = (event: PointerEvent3D | TouchEvent3D) => {
+  event.stopPropagation();
+  setIsDragging(true);
+  onDragStart();  // ドラッグ開始を通知
+  //console.log('👇 Pointer down - Starting drag');
+  setVelocity({ x: 0, y: 0 });
+
+  const clientX = 'touches' in event.nativeEvent 
+    ? event.nativeEvent.touches[0].clientX 
+    : event.nativeEvent.clientX;
+  const clientY = 'touches' in event.nativeEvent 
+    ? event.nativeEvent.touches[0].clientY 
+    : event.nativeEvent.clientY;
 
   setPreviousMousePosition({
     x: clientX,
     y: clientY
   });
+  
+  lastUpdateTime.current = Date.now();
+  disableScroll();
 };
-  // マウスアップハンドラー
-  const handlePointerUp = () => {
-    setIsDragging(false);
+
+  // マウスアップハンドラーの修正
+  const handlePointerUp = useCallback(() => {
+    if (isDragging) {
+      setIsDragging(false);
+      onDragEnd();  // ドラッグ終了を通知
+      enableScroll();
+    }
+  }, [isDragging, enableScroll, onDragEnd]);
+
+  const handleTouchEnd = () => {
+    if (isDragging) {
+      //console.log('👆 Touch end - Ending drag');
+      setIsDragging(false);
+      enableScroll();
+    }
   };
 
-  useEffect(() => {
-    const handleMove = (e: PointerEvent | TouchEvent) => handlePointerMove(e);
-    
-    window.addEventListener('pointermove', handleMove as (e: PointerEvent) => void);
-    window.addEventListener('touchmove', handleMove as (e: TouchEvent) => void);
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('touchend', handlePointerUp);
+useEffect(() => {
+  const handleMove = (e: PointerEvent | TouchEvent) => {
+    if (isDragging) {
+      handlePointerMove(e);
+    }
+  };
 
-    return () => {
-      window.removeEventListener('pointermove', handleMove as (e: PointerEvent) => void);
+  if (isDragging) {
+    const options = { passive: false };
+    window.addEventListener('touchmove', handleMove as (e: TouchEvent) => void, options);
+    window.addEventListener('pointermove', handleMove as (e: PointerEvent) => void);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('pointerleave', handlePointerUp);
+    window.addEventListener('touchcancel', handleTouchEnd);
+  }
+
+  return () => {
+    if (isDragging) {
       window.removeEventListener('touchmove', handleMove as (e: TouchEvent) => void);
+      window.removeEventListener('pointermove', handleMove as (e: PointerEvent) => void);
       window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('touchend', handlePointerUp);
-    };
-  }, [isDragging, previousMousePosition]);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('pointerleave', handlePointerUp);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+      enableScroll();
+    }
+  };
+}, [isDragging, handlePointerUp, enableScroll]);
 
 // SpiralGalleryコンポーネント内のメモリ解放処理
 useEffect(() => {
   return () => {
+    //console.log('🧹 Cleanup - Ensuring scroll is enabled');
+    enableScroll();
     if (groupRef.current) {
       // グループ内の全てのメッシュを処理
       groupRef.current.traverse((child) => {
@@ -442,26 +595,22 @@ useEffect(() => {
       const minVelocity = 0.001;
 
       setVelocity(prev => {
-        const newVelY = prev.y * friction;
-        const newVelX = prev.x * friction;
+        const newVelY = isNaN(prev.y) ? 0 : prev.y * friction;
+        const newVelX = isNaN(prev.x) ? 0 : prev.x * friction;
+
+        const limitedVelY = Math.min(Math.max(newVelY, -MAX_VELOCITY.INERTIA), MAX_VELOCITY.INERTIA);
+        const limitedVelX = Math.min(Math.max(newVelX, -MAX_VELOCITY.VERTICAL), MAX_VELOCITY.VERTICAL);
 
         return {
-          y: Math.abs(newVelY) < minVelocity ? 0 : newVelY,
-          x: Math.abs(newVelX) < minVelocity ? 0 : newVelX
+          y: Math.abs(limitedVelY) < minVelocity ? 0 : limitedVelY,
+          x: Math.abs(limitedVelX) < minVelocity ? 0 : limitedVelX
         };
       });
 
-      setRotationState(prev => {
-        let newX = prev.x + velocity.x;
-        let newY = prev.y + velocity.y;
-
-        newX = Math.max(Math.min(newX, Math.PI/36), -Math.PI/36);
-
-        return {
-          y: newY,
-          x: newX
-        };
-      });
+      setRotationState(prev => ({
+        y: normalizeRotation(prev.y + velocity.y),
+        x: Math.max(Math.min(prev.x + velocity.x, Math.PI/36), -Math.PI/36)
+      }));
     }
 
     // 回転の適用
@@ -483,21 +632,20 @@ useEffect(() => {
     }
   });
 
-if (!visible) return null;
+
   
 return (
   <group 
     ref={groupRef} 
-    visible={visible}
     onPointerDown={handlePointerDown}
-  >
+>
     <ImagePanels 
       images={getGalleryImages()}
       sharedGeometry={sharedGeometry}
       onPanelClick={() => navigate('/works')}  
     />
   </group>
-)
+);
 }
 
 export default SpiralGallery

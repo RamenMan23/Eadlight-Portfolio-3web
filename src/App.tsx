@@ -11,6 +11,7 @@ import ContactForm from './components/ContactForm'
 import Header from './components/Header';
 import PageGuide from './components/PageGuide'
 import WorksPage from './pages/WorksPage'
+import { useState } from 'react'
 
 
 function App() {
@@ -26,8 +27,8 @@ function App() {
 
 
 function Home() {
-
   const { scrollYProgress } = useScroll();
+  const [isDragging, setIsDragging] = useState(false);
 
   const wrapperZIndex = useTransform(
     scrollYProgress,
@@ -52,9 +53,10 @@ function Home() {
           <ScrollControls   pages={0}       // 4ページ分のスクロール領域
             damping={0.2}   // スムーズなスクロール
             distance={1.5}  // スクロール距離を少し延長
+            enabled={!isDragging}
           >
             <Suspense fallback={null}>
-              <ScrollScene scrollProgress={scrollYProgress} />
+              <ScrollScene scrollProgress={scrollYProgress} onDragStart={() => setIsDragging(true)} onDragEnd={() => setIsDragging(false)} />
             </Suspense>
           </ScrollControls>
 
