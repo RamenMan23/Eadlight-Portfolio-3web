@@ -460,7 +460,7 @@ export const SpiralGallery = ({  fadeOut = false, onDragStart, onDragEnd }: Spir
       Math.min(Math.max(rawVelocityX, -MAX_VELOCITY.VERTICAL), MAX_VELOCITY.VERTICAL);
 
     setVelocity(prev => ({
-      y: isNaN(prev.y) ? targetVelocityY : prev.y * 0.2 + targetVelocityY * 0.1,
+      y: isNaN(prev.y) ? targetVelocityY : prev.y * 0.1 + targetVelocityY * 0.05,
       x: isNaN(prev.x) ? targetVelocityX : prev.x * 0.2 + targetVelocityX * 0.1
     }));
 
@@ -591,7 +591,7 @@ useEffect(() => {
     const baseRotationY = rotationY.get();
 
     if (!isDragging) {
-      const friction = 0.95;
+      const friction = 0.98;
       const minVelocity = 0.001;
 
       setVelocity(prev => {
